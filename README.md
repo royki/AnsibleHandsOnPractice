@@ -1,5 +1,3 @@
-# ansible
-
 _Ansible_
 ------------------
 - Web server with Load balancers 
