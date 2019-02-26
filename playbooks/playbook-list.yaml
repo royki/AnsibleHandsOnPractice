@@ -1,0 +1,10 @@
+# Import all playbook
+
+---
+  - import_playbook: update-apt.yaml
+  - import_playbook: install-services.yaml
+  - import_playbook: settings-app.yaml
+  - import_playbook: settings-lb.yaml
+  - import_playbook: check-status.yaml
+  - import_playbook: uname.yaml
+#  - import_playbook: ping-all.yaml

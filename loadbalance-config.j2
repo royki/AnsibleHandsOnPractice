@@ -1,0 +1,24 @@
+# Loadbalancing Setting
+
+{# ProxyRequests ofts off
+<Proxy balancer://webcluster >
+   BalanceMember http://ip_address
+   BalanceMember http://ip_address
+   ProxySet lbmethod=byrequests
+</Proxy>
+#}
+
+<Proxy balancer://webcluster >
+  {% for hosts in groups['webservers'] %}
+    BalancerMember http://{{hostvars[hosts]['ansible_host']}}
+  {% endfor %}
+    ProxySet lbmethod=byrequests
+</Proxy>
+
+# Optional
+<Location /balancer-manager>
+  SetHandler balancer-manager
+</Location>
+
+ProxyPass /balancer-manager !
+ProxyPass / balancer://webcluster/
