@@ -63,7 +63,7 @@
   - `ignore_errors: yes`
   - TODO
 
-# Ansible Async directive
+### Ansible Async directive
 
 - Async & Poll
 
@@ -81,7 +81,7 @@
       retires: 30
 ```
 
-## Ansible Strategy
+### Ansible Strategy
 
 - Linear Strategy (Default) [Each task is finished first in each server before proceding to next task]
 - Free Strategy [Independantly run task in all server]
@@ -91,7 +91,7 @@
   - `serial: 30%`
 - **Forks** - Ansible uses parallel processes/forks to remote host. By default ansible can create 5 forks at a time.
 
-## Error Handling
+### Error Handling
 
 - `any_error_fatal: true`
 - Email after finishing deployment
@@ -108,7 +108,7 @@
   failed_when: "'ERROR' in command_output.stdout"
 ```
 
-## Jinja2 Templating
+### Jinja2 Templating
 
 - String Manipulation
   - `{{ os_ name }}`
@@ -129,12 +129,12 @@
   - `{{ "/etc/hosts" | basename }}`
   - `{{ "c:\windows\hosts" | win_basename }}`
 
-## Lookup
+### Lookup
 
 - `{{ lookup('csvfile', 'targer_file=file/hosts.csv delimiter=;') }}`
 - Lookup file - `ini`, `dns`, `mongodb` etc
 
-## Anisble Vault
+### Anisble Vault
 
 - `ansible-vault encrypt inventory`
 - `ansible-playbook playbook.yaml -i inventory --ask-vault-pass`
@@ -147,3 +147,7 @@
 ## Dynamic Inventory
 
 - `ansible-playbook playbook.yaml -i inventory.py`
+
+## Ansible Inventory Command
+
+- `ansible-inventory --list -y`
