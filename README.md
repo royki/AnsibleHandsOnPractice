@@ -1,5 +1,6 @@
-_Ansible_
+# _Ansible_
 ------------------
+
 - Web server with Load balancers 
 - Custom Inventory
   - `ansible -i inventory --list-hosts all`
@@ -61,3 +62,88 @@ _Ansible_
   - `changed_when: false`
   - `ignore_errors: yes`
   - TODO
+
+# Ansible Async directive
+
+- Async & Poll
+
+```yaml
+- task:
+    - command: /opt/app.py
+      async: 360
+      poll: 60
+      register: app_result
+
+    - name: Check status of tasks
+      async_status: jid={{ app_result.ansible_job_id }}
+      register: job_result
+      until: job_result.finished
+      retires: 30
+```
+
+## Ansible Strategy
+
+- Linear Strategy (Default) [Each task is finished first in each server before proceding to next task]
+- Free Strategy [Independantly run task in all server]
+  - `strategy: free`
+- Batch Strategy [Based on Linear]
+  - marked with `serial: 3` [Ansible ll run 1st 3 server to execute task and then next]
+  - `serial: 30%`
+- **Forks** - Ansible uses parallel processes/forks to remote host. By default ansible can create 5 forks at a time.
+
+## Error Handling
+
+- `any_error_fatal: true`
+- Email after finishing deployment
+  
+```yaml
+- mail:
+    to: devops@scp.com
+    subject: Job deployed
+    body: Successfull
+ ignore_errors: yes
+
+- command: cat /var/log/server.log
+  register: command_output
+  failed_when: "'ERROR' in command_output.stdout"
+```
+
+## Jinja2 Templating
+
+- String Manipulation
+  - `{{ os_ name }}`
+  - `{{ os_ name | upper }}`
+  - `{{ os_ name | lower }}`
+  - `{{ os_ name | title }}`
+  - `{{ os_ name | replace("Ubuntu", "CentOs") }}`
+  - `{{ os_ name | default("Ubuntu")}} {{ "CentOs" }}`
+- List and Set
+  - `{{ [1,2,3] | min }}`
+  - `{{ [1,2,3] | max }}`
+  - `{{ [1,2,3,3,4] | unique }}`
+  - `{{ [1,2,3,3,4] | union[2,3] }}`
+  - `{{ [1,2,3,3,4] | intersect[3,5,6] }}`
+  - `{{ 100 | random }}`
+  - `{{ ["My", "name", "is", "Bond"] | join("") }}`
+- Filters in file
+  - `{{ "/etc/hosts" | basename }}`
+  - `{{ "c:\windows\hosts" | win_basename }}`
+
+## Lookup
+
+- `{{ lookup('csvfile', 'targer_file=file/hosts.csv delimiter=;') }}`
+- Lookup file - `ini`, `dns`, `mongodb` etc
+
+## Anisble Vault
+
+- `ansible-vault encrypt inventory`
+- `ansible-playbook playbook.yaml -i inventory --ask-vault-pass`
+- Store vault password in a file
+  - `ansible-playbook playbook.yaml -i inventory --vault-password-file ./vault_pass.txt`
+  - `ansible-playbook playbook.yaml -i inventory --vault-password-file ./vault_pass.py`
+- `ansible-vault view inventory`
+- `ansible-vault create inventory`
+
+## Dynamic Inventory
+
+- `ansible-playbook playbook.yaml -i inventory.py`
