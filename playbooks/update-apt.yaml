@@ -1,8 +1,0 @@
-# Update package
-
----
-  - hosts: webservers:loadbalancers:local
-    become: true
-    tasks:
-      - name: Update packages
-        apt: name=* state=latest

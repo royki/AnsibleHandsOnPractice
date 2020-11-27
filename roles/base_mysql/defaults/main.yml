@@ -1,0 +1,7 @@
+---
+# defaults file for base_mysql
+
+# DB Variables 
+db_name: employee_db
+db_user: db_user
+db_passwword: Passw0rd

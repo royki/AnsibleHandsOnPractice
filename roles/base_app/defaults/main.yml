@@ -1,0 +1,5 @@
+---
+# defaults file for base_app
+
+app_list: ['flask', 'flask_mysql']
+file_path: 'files/'

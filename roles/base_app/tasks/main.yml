@@ -1,0 +1,15 @@
+---
+# tasks file for base_app
+- name: Install Python Flask dependency
+  pip:
+    name: '{{ item }}'
+    state: latest
+  loop: '{{ app_list }}'
+
+- name: Copy the source code
+  copy:
+    src: files/app.py
+    dest: /opt/app.py
+
+- name: Start the web server
+  shell: Flask_APP=/opt/app.py nohup flask run --host=0.0.0.0 &

@@ -1,0 +1,6 @@
+- name: Deploy a web application, mysql using role
+  hosts: ubu_doc-1
+  roles:
+    - base_python
+    - base_app
+    - base_mysql

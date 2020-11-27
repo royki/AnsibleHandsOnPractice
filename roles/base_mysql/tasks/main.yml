@@ -1,0 +1,33 @@
+---
+# tasks file for base_mysql
+
+- name: Install MySql Database
+  apt:
+    name:
+      - mysql-server
+      - mysql-client
+    state: latest
+
+- name: Start MySql service
+  service:
+    name: mysql
+    state: reloaded
+    # daemon_reload: yes
+    enabled: yes
+  tags: start_db
+  
+- name: Create Application DB
+  mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: '{{ db_name }}'
+    state: present
+  tags: create_db
+
+- name: Create Database user
+  mysql_user:
+    name: '{{ db_user }}'
+    password: '{{ db_password }}'
+    priv: '*.*:ALL'
+    state: present
+    host: '%'
+  tags: create_dbuser

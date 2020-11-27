@@ -1,0 +1,11 @@
+- name: Install all required dependencies
+  apt:
+    name:
+      - python3-pip
+      - python-pip
+      - python
+      - python-setuptools 
+      - python-dev 
+      - build-essential 
+    state: latest
+  # with_items:
