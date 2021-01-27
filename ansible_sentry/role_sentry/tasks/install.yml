@@ -1,0 +1,63 @@
+---
+
+# Download Sentry.tar.gz file https://codeload.github.com/getsentry/onpremise/tar.gz/20.12.1
+- name: Download getsentry/onpremise 
+  get_url:
+    url: "{{ getsentry_url_v20_12_1 }}"
+    dest: /home/{{ ansible_ssh_user }}/
+    mode: "644"
+  register: getsentry_pkg_name
+  
+- name: Print Sentry Package Name
+  debug: 
+    var: getsentry_pkg_name.dest
+  
+- name: Extract to home directory
+  unarchive:
+    src: /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|$)') }}
+    dest: /home/{{ ansible_ssh_user }}/
+    remote_src: yes
+  
+- name: Configure Nginx SSL on Instance
+  template:
+    src: sentry/config.yml.j2
+    dest: /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}/sentry/config.yml
+
+- name: Copy config & .env files to sentry directory
+  copy: 
+    src: "{{ item }}"
+    dest: /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}/sentry/
+  with_items:
+    - files/.env
+    - files/sentry/sentry.conf.py
+
+- name: Install Sentry Onpremise (Run install.sh script)
+  shell: |
+    docker-compose down
+    docker volume prune -f
+    docker volume rm -f $(docker volume ls -aq)
+    cd /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}
+    ./install.sh --no-user-prompt
+
+- name: Create Sentry Admin User (launch and destroy)
+  shell: | 
+    cd /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}
+    docker-compose run --rm web createuser --superuser --email {{ sentry_admin_email }} --password {{ sentry_admin_password }}
+  ignore_errors: yes
+  
+- name: Launch Sentry App (Run Docker Compose to launch all containers)
+  docker_compose:
+    project_src: /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}
+    files:
+      - docker-compose.yml
+    build: no
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}" 
+
+- name: Wait for 20 seconds for the host to start
+  wait_for:
+    timeout: "{{ host_delay_time }}"
+  
+- name: Go to the following url to access the site
+  debug:
+    msg: "https://{{ ansible_host }}"

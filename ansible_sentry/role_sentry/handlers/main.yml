@@ -1,0 +1,17 @@
+---
+# handlers file for role_sentry
+
+- name: Restart Nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: Start Sentry
+  docker_compose:
+    project_src: /home/{{ ansible_ssh_user }}/{{ getsentry_pkg_name.dest | regex_search('[^/]+(?=/$|\.tar.gz$)') }}
+    files:
+      - docker-compose.yml
+    build: no
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}" 

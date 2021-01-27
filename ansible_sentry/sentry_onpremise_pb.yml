@@ -1,0 +1,7 @@
+---
+
+- name: Install Sentry Onpremis
+  hosts: snt-server
+  become: true
+  roles:
+    - { role: role_sentry }

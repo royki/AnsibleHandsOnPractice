@@ -1,0 +1,14 @@
+# host
+[localhost]
+local ansible_host=127.0.0.1 ansible_connection=local
+
+[sentry_onpremis]
+snt-server ansible_host=UPDATE_HOST_IP ansible_connection=ssh ansible_ssh_user=ubuntu
+
+
+[vars]
+ansible_python_interpreter=/usr/bin/python3
+
+
+[sentry_onpremis:vars]
+ansible_ssh_private_key_file=UPDATE_PEM_FILE_PATH

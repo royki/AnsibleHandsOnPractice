@@ -1,0 +1,12 @@
+---
+# tasks file for role_sentry
+
+- name: Configuration to install necessary packages
+  import_tasks: configure.yml
+  tags:
+    - configure
+
+- name: Configuration to install necessary packages
+  import_tasks: install.yml
+  tags:
+    - install

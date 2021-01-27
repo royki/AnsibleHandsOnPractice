@@ -1,0 +1,106 @@
+---
+# Remove Docker
+
+- name: Remove Docker, docker-engine, docker.io
+  apt: 
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - docker
+    - docker-engine
+    - docker.io
+    - docker-compose
+  tags:
+    - never
+
+# Install packages
+
+- name: Update platform
+  apt:
+    upgrade: "yes"
+    update_cache: "yes"
+    cache_valid_time: "{{ apt_cache_valid_time|default(86400)|int }}"
+  when:
+    ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+- name: Install python and pip
+  apt:
+    name: ['python', 'python3', 'python-pip', 'python3-pip', 'python-setuptools', 'python-dev', 'build-essential', 'awscli']
+    state: present
+  
+- name: Set Docker packages installation
+  apt:
+    name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
+    update_cache: "yes"
+    state: present
+    cache_valid_time: "{{ apt_cache_valid_time|default(3600)|int }}"  
+
+- name: Create Docker group
+  group:
+    name: docker
+    state: present
+  
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_ssh_user }}"
+    groups: ["docker"]
+    append: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  
+- name: Get Docker script file
+  get_url:
+    url: "{{ docker_sh_url }}"
+    dest: "{{ ansible_user_dir }}/get-docker.sh"
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Install Docker
+  shell: |
+    sh {{ ansible_user_dir }}/get-docker.sh
+    rm {{ ansible_user_dir }}/get-docker.sh
+
+- name: Install docker-compose package via pip
+  pip:
+    name: ["pyrsistent==0.16.0", "docker-compose", "jmespath", "boto", "boto3", "botocore"]
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Modify /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: 127.0.0.1 localhost {{ getsentry_domain_url }}
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Allow and enable UFW
+  ufw:
+    state: enabled
+    policy: allow
+
+- name: Create self-signed certificates
+  command: >
+    openssl req -x509 -nodes -subj '/CN={{ ansible_fqdn }}' -days 3650
+    -newkey rsa:4096 -sha256 -keyout {{ item.key }} -out {{ item.cert }}
+    creates={{ item.cert }}
+  with_items: "{{ self_signed_certs }}"
+  
+- name: Install Nginx on Instance
+  apt: 
+    name: nginx
+    state: latest
+
+- name: Configure Nginx SSL on Instance
+  template:
+    src: etc/nginx/snippets/self-signed.conf.j2
+    dest: "{{ nginx_snippets_ssl }}/self-signed.conf"  
+
+- name: Configure Nginx on Instance
+  template:
+    src: etc/nginx/default.j2
+    dest: "{{ nginx_site_default }}/default"
+
+- name: Restart Nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

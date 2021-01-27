@@ -1,0 +1,25 @@
+---
+# defaults var for role_sentry
+
+docker_sh_url: "https://get.docker.com"
+getsentry_url_v20_12_1: "https://codeload.github.com/getsentry/onpremise/tar.gz/20.12.1"
+
+getsentry_domain_url: "sentry.testonpremise.com"
+gensentry_local_port: 9000
+
+# SSL
+self_signed_certs:
+  - key: /etc/ssl/private/{{ getsentry_domain_url }}.key
+    cert: /etc/ssl/certs/{{ getsentry_domain_url }}.crt
+
+# Nginx
+nginx_snippets_ssl: "/etc/nginx/snippets"
+nginx_site_default: "/etc/nginx/sites-available"
+
+
+host_delay_time: 20
+
+# Sentry Admin User [UPATE ADMIN USER EMAIL AND PASSWORD]
+sentry_admin_email: "admin@sentry.com"
+sentry_admin_password: "ADMIN"
+
