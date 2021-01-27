@@ -1,6 +1,6 @@
 ---
 
-- name: Install Sentry Onpremis
+- name: Install Sentry Onpremise
   hosts: snt-server
   become: true
   roles:
